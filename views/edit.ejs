@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Edit your chat</title>
+
+    <style>
+      :root {
+        --wa-green: #075e54;
+        --wa-green-2: #0b806f;
+        --bg: #ece5dd;
+        --card: #ffffff;
+        --bubble: #dcf8c6;
+        --bubble-hover: #c9f0b5;
+        --text: #1f2937;
+        --muted: #6b7280;
+        --border: #e5e7eb;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family: "Segoe UI", system-ui, -apple-system, Arial, sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        min-height: 100vh;
+        padding-top: 90px; /* space for fixed navbar */
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+      }
+
+      /* ===== NAVBAR ===== */
+      .navbar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        background: var(--wa-green);
+        padding: 14px 22px;
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.18);
+        z-index: 1000;
+      }
+
+      .navbar-inner {
+        max-width: 980px;
+        margin: 0 auto;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+      }
+
+      .navbar h2 {
+        margin: 0;
+        color: white;
+        font-size: 20px;
+        font-weight: 600;
+        letter-spacing: 0.2px;
+      }
+
+      .nav-actions {
+        display: flex;
+        gap: 10px;
+      }
+
+      .btn {
+        border: none;
+        cursor: pointer;
+        border-radius: 10px;
+        font-weight: 700;
+        font-size: 13px;
+        padding: 8px 12px;
+        transition: transform 0.18s ease, box-shadow 0.18s ease,
+          background-color 0.18s ease, border-color 0.18s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        line-height: 1;
+        user-select: none;
+        text-decoration: none;
+      }
+
+      .btn:active {
+        transform: translateY(0);
+        box-shadow: none;
+      }
+
+      .btn-secondary {
+        background: rgba(255, 255, 255, 0.14);
+        color: white;
+        border: 1px solid rgba(255, 255, 255, 0.25);
+      }
+
+      .btn-secondary:hover {
+        background: rgba(255, 255, 255, 0.2);
+        transform: translateY(-1px);
+      }
+
+      .btn-primary {
+        background: var(--wa-green-2);
+        color: white;
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.18);
+      }
+
+      .btn-primary:hover {
+        background: #0f8f7a;
+        transform: translateY(-2px);
+        box-shadow: 0 12px 22px rgba(0, 0, 0, 0.22);
+      }
+
+      /* ===== CARD ===== */
+      .edit-card {
+        background: var(--card);
+        width: 100%;
+        max-width: 640px;
+        border-radius: 18px;
+        padding: 20px 20px 16px;
+        box-shadow: 0 14px 35px rgba(0, 0, 0, 0.14);
+        border: 1px solid rgba(0, 0, 0, 0.04);
+        margin: 0 16px;
+      }
+
+      .header-row {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 10px;
+      }
+
+      .title {
+        margin: 0;
+        color: var(--text);
+        font-size: 18px;
+        font-weight: 800;
+        letter-spacing: 0.2px;
+      }
+
+      .sub {
+        margin: 6px 0 0;
+        color: var(--muted);
+        font-size: 13px;
+        line-height: 1.45;
+      }
+
+      .chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: #f3f4f6;
+        border: 1px solid var(--border);
+        color: #111827;
+        padding: 6px 10px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 700;
+        white-space: nowrap;
+      }
+
+      .divider {
+        border: none;
+        border-top: 1px solid var(--border);
+        margin: 14px 0;
+      }
+
+      /* ===== MESSAGE EDITOR ===== */
+      label {
+        display: block;
+        font-size: 13px;
+        font-weight: 800;
+        color: #111827;
+        margin-bottom: 8px;
+      }
+
+      textarea {
+        width: 100%;
+        padding: 12px 12px;
+        border-radius: 14px;
+        border: 1px solid #cbd5e1;
+        font-size: 14px;
+        font-family: inherit;
+        resize: none;
+        min-height: 180px;
+        transition: border-color 0.18s ease, box-shadow 0.18s ease,
+          background-color 0.18s ease;
+        background: var(--bubble);
+        box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.03);
+      }
+
+      textarea:focus {
+        outline: none;
+        border-color: var(--wa-green);
+        box-shadow: 0 0 0 3px rgba(7, 94, 84, 0.14);
+        background: var(--bubble-hover);
+      }
+
+      /* ===== ACTIONS ===== */
+      .actions {
+        margin-top: 14px;
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+      }
+
+      .btn-light {
+        background: #f3f4f6;
+        border: 1px solid #e5e7eb;
+        color: #111827;
+        box-shadow: none;
+      }
+
+      .btn-light:hover {
+        background: #eaecef;
+        transform: translateY(-1px);
+      }
+
+      @media (max-width: 520px) {
+        .navbar-inner {
+          max-width: 100%;
+        }
+        .header-row {
+          flex-direction: column;
+          align-items: flex-start;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="navbar">
+      <div class="navbar-inner">
+        <h2>Edit Message</h2>
+
+        <div class="nav-actions">
+          <a class="btn btn-secondary" href="/chats">← Back</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="edit-card">
+      <div class="header-row">
+        <div>
+          <p class="title">Edit chat</p>
+          <p class="sub">
+            From <b><%= chat.from %></b> → To <b><%= chat.to %></b>
+          </p>
+        </div>
+
+        <span class="chip">ID: <%= chat._id %></span>
+      </div>
+
+      <hr class="divider" />
+
+      <form action="/chats/<%= chat._id %>?_method=PUT" method="post">
+        <label for="message">Message</label>
+        <textarea id="message" name="message"><%= chat.message %></textarea>
+
+        <div class="actions">
+          <a class="btn btn-light" href="/chats">Cancel</a>
+          <button class="btn btn-primary" type="submit">Save Changes</button>
+        </div>
+      </form>
+    </div>
+  </body>
+</html>

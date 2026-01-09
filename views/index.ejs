@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mini WhatsApp</title>
+
+    <style>
+      :root {
+        --wa-green: #075e54;
+        --wa-green-2: #0b806f;
+        --bg: #ece5dd;
+        --card: #ffffff;
+        --bubble: #dcf8c6;
+        --bubble-hover: #c9f0b5;
+        --text: #1f2937;
+        --muted: #6b7280;
+        --border: #e5e7eb;
+
+        --danger: #b00020;
+        --danger-bg: #ffe3e3;
+        --danger-bg-hover: #ffcfcf;
+        --danger-border: #ffb3b3;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family: "Segoe UI", system-ui, -apple-system, Arial, sans-serif;
+        background: var(--bg);
+        color: var(--text);
+      }
+
+      /* ===== TOP BAR ===== */
+      .top-bar {
+        position: sticky;
+        top: 0;
+        z-index: 1000;
+        background: var(--wa-green);
+        padding: 14px 20px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.18);
+      }
+
+      .top-bar h1 {
+        margin: 0;
+        color: white;
+        font-size: 22px;
+        letter-spacing: 0.2px;
+      }
+
+      /* ===== BUTTONS (shared) ===== */
+      .btn {
+        border: none;
+        cursor: pointer;
+        border-radius: 10px;
+        font-weight: 700;
+        font-size: 13px;
+        padding: 8px 14px;
+        transition: transform 0.18s ease, box-shadow 0.18s ease,
+          background-color 0.18s ease, border-color 0.18s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        line-height: 1;
+        user-select: none;
+      }
+
+      .btn:active {
+        transform: translateY(0);
+        box-shadow: none;
+      }
+
+      .btn-primary {
+        background: var(--wa-green-2);
+        color: white;
+        box-shadow: 0 6px 14px rgba(0, 0, 0, 0.18);
+      }
+
+      .btn-primary:hover {
+        background: #0f8f7a;
+        transform: translateY(-2px);
+        box-shadow: 0 10px 18px rgba(0, 0, 0, 0.22);
+      }
+
+      .btn-soft {
+        background: var(--bubble);
+        border: 1px solid #b7e4a8;
+        color: var(--wa-green);
+        box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+      }
+
+      .btn-soft:hover {
+        background: var(--bubble-hover);
+        transform: translateY(-1px);
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.14);
+      }
+
+      .btn-danger {
+        background: var(--danger-bg);
+        border: 1px solid var(--danger-border);
+        color: var(--danger);
+        box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+      }
+
+      .btn-danger:hover {
+        background: var(--danger-bg-hover);
+        transform: translateY(-1px);
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.14);
+      }
+
+      /* ===== GRID CARD LAYOUT ===== */
+      .container {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+        gap: 20px;
+        padding: 24px;
+      }
+
+      /* ===== CHAT CARD ===== */
+      .chat-card {
+        background: var(--card);
+        border-radius: 16px;
+        padding: 18px;
+        min-height: 190px;
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.14);
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        border: 1px solid rgba(0, 0, 0, 0.03);
+        transition: transform 0.22s ease, box-shadow 0.22s ease;
+      }
+
+      .chat-card:hover {
+        transform: translateY(-6px);
+        box-shadow: 0 16px 34px rgba(0, 0, 0, 0.18);
+      }
+
+      .from {
+        font-weight: 700;
+        color: var(--wa-green);
+        margin: 0 0 10px;
+      }
+
+      .message {
+        background: var(--bubble);
+        padding: 12px 14px;
+        border-radius: 10px;
+        font-size: 15px;
+        line-height: 1.45;
+        margin: 0;
+        width: fit-content;
+        max-width: 100%;
+        transition: background-color 0.22s ease, transform 0.22s ease;
+        box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.03);
+      }
+
+      .chat-card:hover .message {
+        background: var(--bubble-hover);
+        transform: scale(1.01);
+      }
+
+      .actions-row {
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+        margin-top: 10px;
+      }
+
+      .to {
+        font-weight: 700;
+        color: var(--wa-green);
+        margin: 10px 0 0;
+      }
+
+      hr {
+        border: none;
+        border-top: 1px solid var(--border);
+        margin: 12px 0;
+      }
+
+      .meta-time {
+        color: var(--muted);
+        font-size: 13px;
+        margin: 0;
+        line-height: 1.4;
+      }
+
+      /* ===== MODAL ===== */
+      .modal-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(17, 24, 39, 0.55);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 3000;
+        padding: 16px;
+      }
+
+      .modal-overlay.show {
+        display: flex;
+      }
+
+      .modal {
+        width: 100%;
+        max-width: 460px;
+        background: white;
+        border-radius: 18px;
+        padding: 18px 18px 14px;
+        box-shadow: 0 22px 60px rgba(0, 0, 0, 0.35);
+        border: 1px solid rgba(0, 0, 0, 0.06);
+        transform: translateY(6px);
+        animation: pop 160ms ease-out forwards;
+      }
+
+      @keyframes pop {
+        to {
+          transform: translateY(0);
+        }
+      }
+
+      .modal-header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 12px;
+      }
+
+      .modal-title {
+        margin: 0;
+        color: var(--text);
+        font-size: 18px;
+        font-weight: 800;
+        letter-spacing: 0.2px;
+      }
+
+      .modal-subtitle {
+        margin: 8px 0 0;
+        color: var(--muted);
+        font-size: 14px;
+        line-height: 1.5;
+      }
+
+      .modal-close {
+        border: 1px solid var(--border);
+        background: #fff;
+        color: var(--muted);
+        width: 34px;
+        height: 34px;
+        border-radius: 10px;
+        cursor: pointer;
+        display: grid;
+        place-items: center;
+        transition: background-color 0.18s ease, transform 0.18s ease;
+      }
+
+      .modal-close:hover {
+        background: #f9fafb;
+        transform: translateY(-1px);
+      }
+
+      .modal-divider {
+        border: none;
+        border-top: 1px solid var(--border);
+        margin: 14px 0;
+      }
+
+      .modal-preview {
+        background: #f9fafb;
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 12px;
+      }
+
+      .preview-line {
+        margin: 0;
+        font-size: 13px;
+        color: var(--muted);
+      }
+
+      .preview-line b {
+        color: var(--text);
+      }
+
+      .preview-msg {
+        margin: 10px 0 0;
+        background: var(--bubble);
+        border-radius: 12px;
+        padding: 10px 12px;
+        color: var(--text);
+        font-size: 14px;
+        line-height: 1.45;
+        border: 1px solid rgba(0, 0, 0, 0.04);
+      }
+
+      .modal-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+        margin-top: 14px;
+      }
+
+      .btn-neutral {
+        background: #f3f4f6;
+        border: 1px solid #e5e7eb;
+        color: #111827;
+        box-shadow: none;
+      }
+
+      .btn-neutral:hover {
+        background: #eaecef;
+        transform: translateY(-1px);
+      }
+
+      /* Small screens spacing */
+      @media (max-width: 420px) {
+        .container {
+          padding: 16px;
+        }
+        .actions-row {
+          justify-content: space-between;
+        }
+      }
+
+      /* ===== TOAST ===== */
+      .toast {
+        position: fixed;
+        left: 50%;
+        top: 76px; /* below top bar */
+        transform: translateX(-50%) translateY(-10px);
+        background: rgba(17, 24, 39, 0.95);
+        color: white;
+        padding: 10px 14px;
+        border-radius: 12px;
+        font-size: 13px;
+        font-weight: 700;
+        box-shadow: 0 16px 40px rgba(0, 0, 0, 0.25);
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.2s ease, transform 0.2s ease;
+        z-index: 4000;
+      }
+
+      .toast.show {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="top-bar">
+      <h1>All Chats</h1>
+
+      <form action="/chats/new" method="get">
+        <button class="btn btn-primary" type="submit">Add Chat</button>
+      </form>
+    </div>
+
+    <div class="toast" id="toast" role="status" aria-live="polite">
+      Chat deleted successfully.
+    </div>
+
+    <div class="container">
+      <% for (let chat of chats) { %>
+      <div class="chat-card">
+        <div>
+          <p class="from">From : <%= chat.from %></p>
+
+          <div class="message"><%= chat.message %></div>
+
+          <div class="actions-row">
+            <form action="/chats/<%= chat._id %>/edit" method="get">
+              <button class="btn btn-soft" type="submit">Edit</button>
+            </form>
+
+            <form
+              action="/chats/<%= chat._id %>?_method=DELETE"
+              method="post"
+              data-from="<%= chat.from %>"
+              data-to="<%= chat.to %>"
+              data-message="<%= JSON.stringify(chat.message || '') %>"
+            >
+              <button
+                class="btn btn-danger"
+                type="button"
+                onclick="openDeleteModal(this)"
+              >
+                Delete
+              </button>
+            </form>
+          </div>
+        </div>
+
+        <div>
+          <p class="to">Received by <%= chat.to %></p>
+          <hr />
+        </div>
+
+        <div>
+          <p class="meta-time">
+            <%= chat.created_at.toString().split(" ")[4] %>
+          </p>
+          <p class="meta-time">
+            <%= chat.created_at.toString().split(" ").slice(0,4).join(" ") %>
+          </p>
+        </div>
+      </div>
+      <% } %>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div class="modal-overlay" id="deleteModal" aria-hidden="true">
+      <div
+        class="modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="modalTitle"
+      >
+        <div class="modal-header">
+          <div>
+            <h3 class="modal-title" id="modalTitle">Delete message</h3>
+            <p class="modal-subtitle">
+              Are you sure you want to delete this chat? This action cannot be
+              undone.
+            </p>
+          </div>
+
+          <button
+            class="modal-close"
+            type="button"
+            onclick="closeDeleteModal()"
+            aria-label="Close"
+          >
+            ✕
+          </button>
+        </div>
+
+        <hr class="modal-divider" />
+
+        <div class="modal-preview">
+          <p class="preview-line">
+            From: <b id="previewFrom">—</b> → To: <b id="previewTo">—</b>
+          </p>
+          <div class="preview-msg" id="previewMsg">—</div>
+        </div>
+
+        <div class="modal-actions">
+          <button
+            class="btn btn-neutral"
+            type="button"
+            onclick="closeDeleteModal()"
+          >
+            Cancel
+          </button>
+          <button
+            class="btn btn-danger"
+            type="button"
+            onclick="confirmDelete()"
+          >
+            Delete
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      let formToDelete = null;
+
+      function openDeleteModal(btn) {
+        formToDelete = btn.closest("form");
+
+        const from = formToDelete?.dataset?.from || "—";
+        const to = formToDelete?.dataset?.to || "—";
+        const message = formToDelete?.dataset?.message
+          ? JSON.parse(formToDelete.dataset.message)
+          : "—";
+
+        document.getElementById("previewFrom").textContent = from;
+        document.getElementById("previewTo").textContent = to;
+        document.getElementById("previewMsg").textContent = message;
+
+        const modal = document.getElementById("deleteModal");
+        modal.classList.add("show");
+        modal.setAttribute("aria-hidden", "false");
+      }
+
+      function closeDeleteModal() {
+        formToDelete = null;
+
+        const modal = document.getElementById("deleteModal");
+        modal.classList.remove("show");
+        modal.setAttribute("aria-hidden", "true");
+      }
+
+      function confirmDelete() {
+        if (formToDelete) formToDelete.submit();
+      }
+
+      // Close when clicking outside
+      document.addEventListener("click", function (e) {
+        const overlay = document.getElementById("deleteModal");
+        if (overlay.classList.contains("show") && e.target === overlay) {
+          closeDeleteModal();
+        }
+      });
+
+      // Close on ESC
+      document.addEventListener("keydown", function (e) {
+        if (e.key === "Escape") closeDeleteModal();
+      });
+
+      // Toast helper
+      (function () {
+        const params = new URLSearchParams(window.location.search);
+        const toastType = params.get("toast");
+        const toastEl = document.getElementById("toast");
+
+        if (!toastEl) return;
+
+        if (toastType === "deleted") {
+          toastEl.classList.add("show");
+
+          // auto-hide
+          setTimeout(() => toastEl.classList.remove("show"), 2200);
+
+          // remove ?toast=deleted from URL (clean URL)
+          setTimeout(() => {
+            params.delete("toast");
+            const newQuery = params.toString();
+            const newUrl =
+              window.location.pathname + (newQuery ? "?" + newQuery : "");
+            window.history.replaceState({}, "", newUrl);
+          }, 300);
+        } else {
+          toastEl.classList.remove("show");
+        }
+      })();
+    </script>
+  </body>
+</html>
