@@ -153,16 +153,6 @@ Delete is performed using `DELETE /chats/:id` with a professional confirmation m
 
 ---
 
-## Notes / Improvements (Optional)
-
-- Move DB connection string into environment variables (`.env`)
-- Add validation + better error handling UI
-- Add search + filter on `/chats` (from/to/message)
-- Add pagination for large datasets
-- Add API routes (`/api/chats`) for frontend/mobile integration
-
----
-
 ## License
 
 NIL - Made by **Prakash**
